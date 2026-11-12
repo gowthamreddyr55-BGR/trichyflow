@@ -270,6 +270,7 @@
             <i class="fa-solid fa-id-badge text-warning me-1"></i> Authorized Role
           </label>
           <select name="role" id="role" class="form-select">
+            <option value="PUBLIC">PUBLIC — Citizen / Motorist Portal</option>
             <option value="ADMIN">ADMIN — Traffic Commissioner / Superuser</option>
             <option value="TRAFFIC_POLICE">TRAFFIC POLICE — Field & Enforcement Officer</option>
             <option value="CONTROL_ROOM" selected>CONTROL ROOM — Traffic Desk Operator</option>
@@ -285,11 +286,14 @@
       <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
         <div class="text-center text-muted small mb-2 fw-semibold">1-CLICK QUICK DEMO LOGIN</div>
         <div class="d-grid gap-2 d-md-flex justify-content-between">
+          <button type="button" class="demo-pill-btn flex-fill" onclick="fillDemo('citizen', 'citizen123', 'PUBLIC')">
+            <i class="fa-solid fa-user text-info me-1"></i> Citizen
+          </button>
           <button type="button" class="demo-pill-btn flex-fill" onclick="fillDemo('admin', 'admin123', 'ADMIN')">
             <i class="fa-solid fa-shield-halved text-warning me-1"></i> Admin
           </button>
           <button type="button" class="demo-pill-btn flex-fill" onclick="fillDemo('police', 'police123', 'TRAFFIC_POLICE')">
-            <i class="fa-solid fa-hand text-info me-1"></i> Police
+            <i class="fa-solid fa-hand text-primary me-1"></i> Police
           </button>
           <button type="button" class="demo-pill-btn flex-fill" onclick="fillDemo('control', 'control123', 'CONTROL_ROOM')">
             <i class="fa-solid fa-desktop text-success me-1"></i> Control

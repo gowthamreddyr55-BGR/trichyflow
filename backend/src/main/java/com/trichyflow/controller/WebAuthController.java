@@ -33,6 +33,8 @@ public class WebAuthController {
             String role = (String) session.getAttribute("role");
             if ("TRAFFIC_POLICE".equalsIgnoreCase(role)) {
                 return "redirect:/police-dashboard.html";
+            } else if ("PUBLIC".equalsIgnoreCase(role) || "CITIZEN".equalsIgnoreCase(role)) {
+                return "redirect:/public-portal.html";
             }
             return "redirect:/dashboard.html";
         }
@@ -83,6 +85,8 @@ public class WebAuthController {
 
             if ("TRAFFIC_POLICE".equalsIgnoreCase(user.getRole())) {
                 return "redirect:/police-dashboard.html";
+            } else if ("PUBLIC".equalsIgnoreCase(user.getRole()) || "CITIZEN".equalsIgnoreCase(user.getRole())) {
+                return "redirect:/public-portal.html";
             }
             return "redirect:/dashboard.html";
         }
@@ -90,15 +94,18 @@ public class WebAuthController {
         // Demo user fallback verification
         if (("admin".equals(username) && "admin123".equals(password)) ||
             ("police".equals(username) && "police123".equals(password)) ||
-            ("control".equals(username) && "control123".equals(password))) {
+            ("control".equals(username) && "control123".equals(password)) ||
+            ("citizen".equals(username) && "citizen123".equals(password))) {
 
             session.setAttribute("user", username);
-            session.setAttribute("fullName", "admin".equals(username) ? "Commissioner S. Ramanathan" : ("police".equals(username) ? "Inspector M. Anbarasan" : "Operator K. Selvam"));
-            session.setAttribute("role", role);
-            session.setAttribute("badgeNumber", "admin".equals(username) ? "IPS-TR-01" : ("police".equals(username) ? "TP-CHATH-42" : "CR-SYS-108"));
+            session.setAttribute("fullName", "admin".equals(username) ? "Commissioner S. Ramanathan" : ("police".equals(username) ? "Inspector M. Anbarasan" : ("citizen".equals(username) ? "Trichy Resident (Public User)" : "Operator K. Selvam")));
+            session.setAttribute("role", "citizen".equals(username) ? "PUBLIC" : role);
+            session.setAttribute("badgeNumber", "admin".equals(username) ? "IPS-TR-01" : ("police".equals(username) ? "TP-CHATH-42" : ("citizen".equals(username) ? "CITIZEN-TN45" : "CR-SYS-108")));
 
             if ("TRAFFIC_POLICE".equalsIgnoreCase(role)) {
                 return "redirect:/police-dashboard.html";
+            } else if ("PUBLIC".equalsIgnoreCase(role) || "citizen".equals(username)) {
+                return "redirect:/public-portal.html";
             }
             return "redirect:/dashboard.html";
         }

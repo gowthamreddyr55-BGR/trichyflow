@@ -33,6 +33,7 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(new User("police", passwordEncoder.encode("police123"), "Inspector M. Anbarasan", "TRAFFIC_POLICE", "TP-CHATH-42", "police@trichyflow.gov.in", "+91 94431 10002"));
             userRepository.save(new User("control", passwordEncoder.encode("control123"), "Operator K. Selvam", "CONTROL_ROOM", "CR-SYS-108", "control@trichyflow.gov.in", "+91 94431 10003"));
             userRepository.save(new User("sub_inspector_kavitha", passwordEncoder.encode("police123"), "SI Kavitha Sundaram", "TRAFFIC_POLICE", "TP-CENT-19", "kavitha.tp@trichyflow.gov.in", "+91 94431 10004"));
+            userRepository.save(new User("citizen", passwordEncoder.encode("citizen123"), "Trichy Resident (Public User)", "PUBLIC", "CITIZEN-TN45", "citizen@trichyflow.gov.in", "+91 94431 10005"));
         }
 
         // 2. Seed 18 Trichy Junctions

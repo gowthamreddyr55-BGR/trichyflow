@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRICHYFLOW — Public Citizen Portal | Trichy Traffic</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Leaflet GIS CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/map.css">
+  <style>
+    :root {
+      --saffron: #FF9933;
+      --white: #FFFFFF;
+      --india-green: #138808;
+      --navy: #000080;
+      --bg-dark: #060E1E;
+      --card-bg: rgba(13, 27, 54, 0.85);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent-blue: #38bdf8;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .public-header {
+      background: rgba(10, 17, 34, 0.95);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(12px);
+    }
+
+    .public-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .portal-nav-pills .nav-link {
+      color: #94A3B8;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .portal-nav-pills .nav-link.active {
+      background: linear-gradient(135deg, var(--saffron) 0%, #ea580c 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+    }
+
+    .sos-bar {
+      background: rgba(239, 68, 68, 0.12);
+      border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 6px 1.5rem;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sos-pill {
+      background: rgba(239, 68, 68, 0.25);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 0.76rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sos-pill:hover {
+      background: #ef4444;
+      color: #FFFFFF;
+    }
+
+    .citizen-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    #citizenMap {
+      height: 480px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      z-index: 10;
+    }
+
+    .challan-item {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .challan-item:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Tricolour Bar -->
+  <div class="tricolour-bar"></div>
+
+  <!-- Main Header -->
+  <header class="public-header">
+    <div class="public-logo">
+      <img src="assets/images/ashoka_chakra.svg" alt="Chakra" style="width: 38px; height: 38px;" class="animate-chakra">
+      <div>
+        <h4 style="margin: 0; font-weight: 900; letter-spacing: 1px; background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          TRICHYFLOW
+        </h4>
+        <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px;">
+          Public Citizen Traffic & E-Challan Portal
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile & Navigation -->
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa fa-user-circle text-warning fs-4"></i>
+        <div class="text-end d-none d-sm-block">
+          <div id="citizenName" style="font-size: 0.85rem; font-weight: 700;">Trichy Resident (Public)</div>
+          <div style="font-size: 0.72rem; color: #38bdf8;" id="citizenVehicle">TN45AB1234</div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-outline-danger" onclick="logoutCitizen()" title="Log out">
+        <i class="fa fa-sign-out-alt me-1"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Emergency Helpline SOS Bar -->
+  <div class="sos-bar">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-danger"><i class="fa fa-phone-volume me-1"></i> EMERGENCY HELPLINES</span>
+      <span class="text-muted d-none d-md-inline">Trichy City 24/7 Response Services:</span>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a href="tel:108" class="sos-pill"><i class="fa fa-ambulance"></i> 108 Ambulance</a>
+      <a href="tel:100" class="sos-pill"><i class="fa fa-shield-alt"></i> 100 Police</a>
+      <a href="tel:103" class="sos-pill" style="border-color: #38bdf8; color: #38bdf8;"><i class="fa fa-traffic-light"></i> 103 Traffic Police</a>
+      <a href="tel:101" class="sos-pill" style="border-color: #f59e0b; color: #f59e0b;"><i class="fa fa-fire-extinguisher"></i> 101 Fire</a>
+    </div>
+  </div>
+
+  <!-- Public Advisory Marquee -->
+  <div style="background: rgba(10, 17, 34, 0.98); border-bottom: 1px solid rgba(255, 153, 51, 0.25); padding: 6px 1.5rem; font-size: 0.78rem; display: flex; align-items: center; gap: 10px;">
+    <span class="badge bg-warning text-dark fw-bold"><i class="fa fa-bullhorn me-1"></i> LIVE ADVISORY</span>
+    <marquee id="publicMarquee" scrollamount="6" style="color: #F8FAFC;">
+      🚨 Cauvery River Bridge Maintenance: Heavy vehicles diverted via Odathurai Overbridge | 🚩 Srirangam Temple Evening Darshan: One-way flow on South Chitra Street | ⚠️ TVS Tollgate Highway convergence: Divert via Crawford Ring
+    </marquee>
+  </div>
+
+  <!-- Main Body Content -->
+  <div class="container-fluid py-4 px-3 px-md-4 flex-grow-1">
+
+    <!-- Feature Navigation Tabs -->
+    <ul class="nav portal-nav-pills mb-4" id="portalTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="challan-tab" data-bs-toggle="pill" data-bs-target="#challan-pane" type="button" role="tab">
+          <i class="fa fa-receipt me-1"></i> My E-Challans & Fines
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="map-tab" data-bs-toggle="pill" data-bs-target="#map-pane" type="button" role="tab" onclick="invalidateMap()">
+          <i class="fa fa-map-marked-alt me-1"></i> Live Traffic Map
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="report-tab" data-bs-toggle="pill" data-bs-target="#report-pane" type="button" role="tab">
+          <i class="fa fa-bullhorn me-1"></i> Report Traffic Issue
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="advisory-tab" data-bs-toggle="pill" data-bs-target="#advisory-pane" type="button" role="tab">
+          <i class="fa fa-info-circle me-1"></i> Official Bulletins
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="hospitals-tab" data-bs-toggle="pill" data-bs-target="#hospitals-pane" type="button" role="tab">
+          <i class="fa fa-hospital me-1"></i> Emergency Hospitals
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="portalTabsContent">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: E-CHALLANS -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="challan-pane" role="tabpanel">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <div class="citizen-card">
+              <h5 class="fw-bold mb-3"><i class="fa fa-search text-warning me-2"></i>Vehicle Violation Search</h5>
+              <div class="mb-3">
+                <label class="form-label">Vehicle Registration Number</label>
+                <div class="input-group">
+                  <input type="text" id="challanSearchPlate" class="form-control bg-dark text-white border-secondary" placeholder="e.g. TN45AB1234">
+                  <button class="btn btn-warning" type="button" onclick="searchChallans()">
+                    <i class="fa fa-search"></i> Search
+                  </button>
+                </div>
+                <div class="form-text text-muted" style="font-size: 0.72rem;">Enter your two-wheeler, car, or commercial vehicle number registered in Tamil Nadu.</div>
+              </div>
+
+              <!-- Quick Demo Plates -->
+              <div class="pt-2 border-top border-secondary border-opacity-25">
+                <span class="text-muted small fw-semibold">Sample Vehicles:</span>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="setSearchPlate('TN45AB1234')">TN45AB1234</button>
+                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="setSearchPlate('TN48CD5678')">TN48CD5678</button>
+                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="setSearchPlate('TN55EF9012')">TN55EF9012</button>
+                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="setSearchPlate('TN45BK4499')">TN45BK4499</button>
+                </div>
+              </div>
+
+              <!-- Challan Summary Box -->
+              <div class="mt-4 p-3 rounded" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted small">Total Violations:</span>
+                  <b id="summaryTotalCount" class="text-white">--</b>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted small">Pending Fines:</span>
+                  <b id="summaryPendingAmount" class="text-danger">--</b>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted small">Payment Status:</span>
+                  <span id="summaryStatusBadge" class="badge bg-secondary">UNKNOWN</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="citizen-card">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa fa-file-invoice text-primary me-2"></i>Recorded Violations & Electronic Notices</h5>
+                <span id="resultsHeaderCount" class="badge bg-info text-dark">0 records</span>
+              </div>
+              <div id="challansContainer">
+                <!-- Dynamically loaded -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: LIVE GIS TRAFFIC MAP -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="map-pane" role="tabpanel">
+        <div class="citizen-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="fw-bold mb-0"><i class="fa fa-map-marked-alt text-success me-2"></i>Trichy City Live Traffic Flow</h5>
+              <div style="font-size: 0.75rem; color: #94A3B8;">Real-time congestion monitor covering all 18 key intersections and arterial river bridges.</div>
+            </div>
+            <div class="d-flex gap-2">
+              <span class="badge" style="background: #10b981;">Normal</span>
+              <span class="badge" style="background: #f59e0b;">Moderate</span>
+              <span class="badge" style="background: #ef4444;">Congested</span>
+              <span class="badge" style="background: #475569;">Road Work</span>
+            </div>
+          </div>
+          <div id="citizenMap"></div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: CITIZEN INCIDENT REPORTING -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="report-pane" role="tabpanel">
+        <div class="row justify-content-center">
+          <div class="col-lg-7">
+            <div class="citizen-card">
+              <div class="text-center mb-4">
+                <div style="font-size: 2rem; color: var(--saffron);">
+                  <i class="fa-solid fa-eye"></i>
+                </div>
+                <h4 class="fw-bold mb-1">Citizen Eye: Report Traffic Bottleneck or Incident</h4>
+                <div style="font-size: 0.8rem; color: #94A3B8;">
+                  Help Trichy Traffic Police respond faster to accidents, waterlogging, broken signals, or unauthorized blockages.
+                </div>
+              </div>
+
+              <div id="incidentReportFeedback" class="alert py-2 px-3 mb-3 text-center" style="display: none; font-size: 0.82rem;"></div>
+
+              <form id="citizenReportForm" onsubmit="handleCitizenIncident(event)">
+                <div class="mb-3">
+                  <label class="form-label"><i class="fa fa-exclamation-triangle text-warning me-1"></i> Issue Category</label>
+                  <select id="reportType" class="form-select bg-dark text-white border-secondary" required>
+                    <option value="Accident">Accident / Collision</option>
+                    <option value="Heavy Congestion">Heavy Gridlock / Congestion</option>
+                    <option value="Waterlogging">Monsoon Waterlogging / Flood Hazard</option>
+                    <option value="Broken Signal">Traffic Signal Malfunction / Dark Signal</option>
+                    <option value="Wrong Parking">Illegal / Obstruction Parking</option>
+                    <option value="Vehicle Breakdown">Vehicle Breakdown on Carriage-way</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label"><i class="fa fa-map-marker-alt text-danger me-1"></i> Location / Junction</label>
+                  <select id="reportJunction" class="form-select bg-dark text-white border-secondary" required>
+                    <!-- Populated via JS -->
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label"><i class="fa fa-align-left text-info me-1"></i> Incident Details & Landmark</label>
+                  <textarea id="reportDesc" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Describe what you observed (e.g. stalled city bus blocking right lane towards bus stand)..." required></textarea>
+                </div>
+
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label">Estimated Severity</label>
+                    <select id="reportSeverity" class="form-select bg-dark text-white border-secondary">
+                      <option value="LOW">Low (Minor Delay)</option>
+                      <option value="MEDIUM" selected>Medium (Lane Blocked)</option>
+                      <option value="HIGH">High (Severe Jam)</option>
+                      <option value="CRITICAL">Critical (Total Halt)</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label">Reporter Name / Phone</label>
+                    <input type="text" id="reportContact" class="form-control bg-dark text-white border-secondary" placeholder="Optional contact number">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="background: linear-gradient(135deg, #FF9933 0%, #ea580c 100%); border: none;">
+                  <i class="fa fa-paper-plane me-2"></i> Submit Report to Control Room
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: OFFICIAL CITIZEN ADVISORIES -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="advisory-pane" role="tabpanel">
+        <div class="citizen-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="fa fa-bullhorn text-warning me-2"></i>Official Traffic Advisories & Road Diversions</h5>
+            <span class="badge bg-secondary">Issued by Trichy Traffic Wing</span>
+          </div>
+          <div id="advisoryCardsGrid" class="row g-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 5: EMERGENCY HOSPITALS -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="hospitals-pane" role="tabpanel">
+        <div class="citizen-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="fw-bold mb-0"><i class="fa fa-hospital text-danger me-2"></i>Trichy Emergency Trauma Hospitals</h5>
+              <div style="font-size: 0.75rem; color: #94A3B8;">Live bed capacity & emergency casualty contact lines.</div>
+            </div>
+            <a href="tel:108" class="btn btn-sm btn-danger"><i class="fa fa-ambulance me-1"></i> Dial 108</a>
+          </div>
+          <div id="publicHospitalCards" class="row g-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer style="background: rgba(10, 17, 34, 0.98); border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; font-size: 0.75rem; color: #64748B; text-align: center;">
+    <div>TRICHYFLOW Intelligent City Traffic Coordination Platform • Government of Tamil Nadu</div>
+    <div class="mt-1">City Police Commissionerate, Tiruchirappalli — Public Citizen Information Service</div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let citizenMapInstance = null;
+
+    function logoutCitizen() {
+      TrichyAPI.logout();
+    }
+
+    function setSearchPlate(plate) {
+      document.getElementById('challanSearchPlate').value = plate;
+      searchChallans();
+    }
+
+    async function searchChallans() {
+      const plate = (document.getElementById('challanSearchPlate').value || '').trim().toUpperCase();
+      const container = document.getElementById('challansContainer');
+      const countBadge = document.getElementById('resultsHeaderCount');
+
+      if (!plate) {
+        container.innerHTML = `<div class="p-4 text-center text-muted">Please enter a vehicle registration number to search records.</div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="p-4 text-center text-muted"><i class="fa fa-spinner fa-spin me-2"></i> Querying Tamil Nadu Traffic Violation Database...</div>`;
+
+      const allChallans = await TrichyAPI.getChallans();
+      const results = allChallans.filter(c => c.vehicleNo.toUpperCase() === plate);
+
+      countBadge.textContent = `${results.length} record(s)`;
+      document.getElementById('summaryTotalCount').textContent = results.length;
+
+      const pendingList = results.filter(c => c.status !== 'PAID');
+      const totalPendingFine = pendingList.reduce((sum, c) => sum + (c.fine || 0), 0);
+      document.getElementById('summaryPendingAmount').textContent = `₹${totalPendingFine.toLocaleString()}`;
+
+      const statusBadge = document.getElementById('summaryStatusBadge');
+      if (results.length === 0) {
+        statusBadge.className = "badge bg-success";
+        statusBadge.textContent = "CLEAN RECORD";
+      } else if (pendingList.length > 0) {
+        statusBadge.className = "badge bg-danger";
+        statusBadge.textContent = `${pendingList.length} PENDING FINE(S)`;
+      } else {
+        statusBadge.className = "badge bg-success";
+        statusBadge.textContent = "ALL FINES CLEARED";
+      }
+
+      if (results.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-5">
+            <i class="fa fa-shield-check fa-3x text-success mb-3 opacity-75"></i>
+            <h5 class="fw-bold text-white">No Traffic Violations Found</h5>
+            <div class="text-muted small">Vehicle <b>${plate}</b> has zero pending challans or violations on record in Trichy city.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = results.map(c => {
+        const isPaid = c.status === 'PAID';
+        return `
+          <div class="challan-item ${isPaid ? 'border-success' : 'border-danger'}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <b class="text-white fs-6">${c.violation}</b>
+                <div style="font-size: 0.76rem; color: #94A3B8;">Notice Ref: <b>CHL-${c.id}-TR</b> • Date: ${c.date || 'Recent'}</div>
+              </div>
+              <span class="badge ${isPaid ? 'bg-success' : 'bg-danger'}">${c.status}</span>
+            </div>
+
+            <div class="row g-2 text-muted small mb-3">
+              <div class="col-sm-6"><i class="fa fa-map-marker-alt text-warning me-1"></i> ${c.location}</div>
+              <div class="col-sm-6"><i class="fa fa-user-shield text-info me-1"></i> Issued By: ${c.officer}</div>
+              <div class="col-sm-6"><i class="fa fa-car me-1"></i> Vehicle Owner: ${c.owner}</div>
+              <div class="col-sm-6"><i class="fa fa-tag me-1"></i> Penalty Amount: <b class="text-warning">₹${c.fine}</b></div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+              <span style="font-size: 0.72rem; color: #64748B;">Section 183 / 184 Motor Vehicles Act</span>
+              ${isPaid ? `
+                <button class="btn btn-sm btn-outline-success py-1" onclick="alert('E-Receipt Generated: Notice CHL-${c.id}-TR for ${plate} paid in full.')">
+                  <i class="fa fa-receipt me-1"></i> View Receipt
+                </button>
+              ` : `
+                <button class="btn btn-sm btn-danger py-1" onclick="payCitizenChallan(${c.id})">
+                  <i class="fa fa-credit-card me-1"></i> Pay ₹${c.fine} Online Now
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function payCitizenChallan(challanId) {
+      if (!confirm("Proceed with online payment via simulated Payment Gateway?")) return;
+      await TrichyAPI.payChallan(challanId);
+      alert("Payment Successful! E-Receipt generated and fine cleared in the Trichy Police Registry.");
+      searchChallans();
+    }
+
+    function initCitizenMap() {
+      if (citizenMapInstance) return;
+      const el = document.getElementById('citizenMap');
+      if (!el) return;
+
+      citizenMapInstance = L.map('citizenMap').setView([10.8200, 78.6900], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(citizenMapInstance);
+
+      // Add junction markers
+      TrichyMockDB.junctions.forEach(j => {
+        let color = '#10B981';
+        if (j.trafficDensity === 'CRITICAL') color = '#EF4444';
+        else if (j.trafficDensity === 'HEAVY') color = '#F97316';
+        else if (j.trafficDensity === 'MODERATE') color = '#F59E0B';
+
+        const circle = L.circleMarker([j.lat, j.lng], {
+          radius: 8,
+          fillColor: color,
+          color: '#FFFFFF',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.85
+        }).addTo(citizenMapInstance);
+
+        circle.bindPopup(`
+          <div style="font-size: 0.85rem; min-width: 180px;">
+            <b style="color: #060E1E;">${j.name}</b><br>
+            <span style="color: #4B5563; font-size: 0.75rem;">${j.landmark}</span>
+            <hr style="margin: 6px 0;">
+            Traffic Density: <b style="color: ${color};">${j.trafficDensity}</b><br>
+            Flow: <b>${j.vpm || j.northFlow + j.southFlow} vehicles/min</b><br>
+            Current Green: <b>${j.greenTime}s</b>
+          </div>
+        `);
+      });
+
+      // Add arterial roads
+      TrichyMockDB.roads.forEach(r => {
+        let roadColor = r.status === 'CONGESTED' ? '#f59e0b' : '#38bdf8';
+        L.polyline(r.coords, { color: roadColor, weight: 4, opacity: 0.7 }).addTo(citizenMapInstance);
+      });
+    }
+
+    function invalidateMap() {
+      setTimeout(() => {
+        if (!citizenMapInstance) {
+          initCitizenMap();
+        } else {
+          citizenMapInstance.invalidateSize();
+        }
+      }, 250);
+    }
+
+    async function handleCitizenIncident(e) {
+      e.preventDefault();
+      const type = document.getElementById('reportType').value;
+      const jId = document.getElementById('reportJunction').value;
+      const jName = document.getElementById('reportJunction').options[document.getElementById('reportJunction').selectedIndex].text;
+      const desc = document.getElementById('reportDesc').value.trim();
+      const severity = document.getElementById('reportSeverity').value;
+      const contact = document.getElementById('reportContact').value.trim();
+
+      const user = TrichyAPI.getCurrentUser() || {};
+      const reporter = contact ? `${user.fullName || 'Citizen'} (${contact})` : (user.fullName || 'Citizen Reporter');
+
+      const incident = {
+        title: `${type} reported at ${jName}`,
+        type: type.toUpperCase().replace(/\s+/g, '_'),
+        location: jName,
+        junctionId: parseInt(jId),
+        severity: severity,
+        description: desc,
+        reportedBy: reporter,
+        vehiclesInvolved: 1,
+        injuries: 0
+      };
+
+      await TrichyAPI.reportIncident(incident);
+      TrichyAPI.addNotification(`Citizen Report: ${type}`, `${desc} at ${jName}`, 'WARNING');
+
+      const fb = document.getElementById('incidentReportFeedback');
+      fb.className = "alert alert-success py-2 px-3 mb-3 text-center";
+      fb.innerHTML = `<i class="fa fa-check-circle me-1"></i> Thank you! Your report has been dispatched to the Trichy Traffic Control Room desk.`;
+      fb.style.display = "block";
+      document.getElementById('citizenReportForm').reset();
+    }
+
+    async function loadCitizenAdvisories() {
+      const container = document.getElementById('advisoryCardsGrid');
+      const list = await TrichyAPI.getAdvisories();
+      if (!container) return;
+
+      container.innerHTML = list.map(a => {
+        const border = a.severity === 'CRITICAL' ? '#ef4444' : (a.severity === 'WARNING' ? '#f59e0b' : '#38bdf8');
+        return `
+          <div class="col-md-6">
+            <div class="p-3 rounded h-100" style="background: rgba(15, 23, 42, 0.75); border-left: 4px solid ${border}; border: 1px solid rgba(255, 255, 255, 0.1);">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <b class="text-white">${a.title}</b>
+                <span class="badge ${a.severity === 'CRITICAL' ? 'bg-danger' : (a.severity === 'WARNING' ? 'bg-warning text-dark' : 'bg-info text-dark')}">${a.severity}</span>
+              </div>
+              <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 8px;">${a.description}</div>
+              <div style="font-size: 0.75rem; color: #34d399;"><i class="fa fa-directions me-1"></i> Detour: ${a.alternateRoute || 'None'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadHospitalCards() {
+      const container = document.getElementById('publicHospitalCards');
+      if (!container) return;
+
+      container.innerHTML = TrichyMockDB.hospitals.map(h => `
+        <div class="col-md-4">
+          <div class="p-3 rounded h-100" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 3px solid #ef4444;">
+            <b class="text-white fs-6">${h.name}</b>
+            <div style="font-size: 0.76rem; color: #94a3b8; margin: 4px 0 8px;"><i class="fa fa-map-marker-alt text-warning me-1"></i> ${h.location}</div>
+            <div style="font-size: 0.8rem; color: #e2e8f0; margin-bottom: 12px;">Trauma Beds: <b>${h.occupied} / ${h.capacity} filled</b></div>
+            <a href="tel:${h.contact.replace(/\s+/g, '')}" class="btn btn-sm btn-outline-danger w-100">
+              <i class="fa fa-phone-alt me-1"></i> Emergency: ${h.contact}
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = TrichyAPI.getCurrentUser();
+      if (user) {
+        document.getElementById('citizenName').textContent = user.fullName || user.username;
+        if (user.vehicleNo) {
+          document.getElementById('citizenVehicle').textContent = user.vehicleNo;
+          document.getElementById('challanSearchPlate').value = user.vehicleNo;
+        } else {
+          document.getElementById('citizenVehicle').textContent = "Public Motorist";
+        }
+      }
+
+      // Populate junction select
+      const jSelect = document.getElementById('reportJunction');
+      if (jSelect) {
+        jSelect.innerHTML = TrichyMockDB.junctions.map(j => `<option value="${j.id}">${j.name} (${j.landmark})</option>`).join('');
+      }
+
+      // Initial searches & loaders
+      searchChallans();
+      loadCitizenAdvisories();
+      loadHospitalCards();
+    });
+  </script>
+</body>
+</html>

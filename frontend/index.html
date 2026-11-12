@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TRICHYFLOW — Trichy City Traffic Control Command Centre</title>
+  <title>TRICHYFLOW — Trichy City Traffic Control & Citizen Portal</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome Icons -->
@@ -22,7 +22,8 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+      padding: 2rem 1rem;
     }
 
     /* Ambient Road Flow Lights */
@@ -50,40 +51,37 @@
       animation: floatParticles 10s ease-in-out infinite reverse;
     }
 
-    /* Subtle Rotating Ashoka Chakra in Center Background */
     .background-chakra {
-      position: absolute;
-      width: 580px;
-      height: 580px;
-      opacity: 0.04;
+      position: fixed;
+      width: 650px;
+      height: 650px;
+      opacity: 0.045;
       pointer-events: none;
-      z-index: 1;
+      z-index: 0;
       top: 50%;
       left: 50%;
-      margin-top: -290px;
-      margin-left: -290px;
+      transform: translate(-50%, -50%);
     }
 
-    /* Glassmorphism Login Container */
     .login-box {
       width: 100%;
-      max-width: 460px;
-      background: rgba(14, 22, 44, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 36px 32px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 153, 51, 0.12);
+      max-width: 540px;
+      background: rgba(13, 27, 54, 0.90);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: 18px;
+      padding: 2rem 2.2rem;
       position: relative;
       z-index: 10;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .login-crest {
-      width: 68px;
-      height: 68px;
-      margin: 0 auto 16px;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 12px;
       background: #ffffff;
       border-radius: 50%;
       display: flex;
@@ -95,9 +93,9 @@
 
     .demo-buttons-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 14px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 10px;
     }
 
     .demo-credential-btn {
@@ -105,8 +103,8 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: #9CA3AF;
       border-radius: 8px;
-      padding: 6px 4px;
-      font-size: 0.72rem;
+      padding: 6px 2px;
+      font-size: 0.68rem;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
@@ -116,6 +114,27 @@
       background: rgba(255, 153, 51, 0.15);
       border-color: var(--saffron);
       color: #fff;
+    }
+
+    .portal-tab-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94A3B8;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .portal-tab-btn.active {
+      background: linear-gradient(135deg, var(--saffron) 0%, #ea580c 100%);
+      color: #FFFFFF;
+      border-color: var(--saffron);
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
     }
   </style>
 </head>
@@ -132,79 +151,190 @@
 
   <div class="login-box">
     <!-- Tricolour Top Accent -->
-    <div class="tricolour-bar" style="position: absolute; top: 0; left: 0; border-radius: 16px 16px 0 0;"></div>
+    <div class="tricolour-bar" style="position: absolute; top: 0; left: 0; border-radius: 18px 18px 0 0;"></div>
 
-    <div class="text-center mb-4">
+    <div class="text-center mb-3">
       <div class="login-crest">
-        <img src="assets/images/ashoka_chakra.svg" alt="Emblem" style="width: 48px; height: 48px;" class="animate-chakra-fast">
+        <img src="assets/images/ashoka_chakra.svg" alt="Emblem" style="width: 44px; height: 44px;" class="animate-chakra-fast">
       </div>
       <div class="tricolour-pill mb-2">Government of Tamil Nadu • Police Traffic Wing</div>
-      <h3 style="font-weight: 900; letter-spacing: 0.08em; margin: 0; font-size: 1.6rem;" class="brand-title">TRICHYFLOW</h3>
-      <div style="font-size: 0.74rem; letter-spacing: 0.09em; color: #9CA3AF; text-transform: uppercase; margin-top: 4px;">
-        Trichy City Traffic Control & Decision Support Platform
-      </div>
-      <div style="font-size: 0.7rem; color: #6B7280; margin-top: 2px;">
-        "Intelligent Traffic Coordination for a Safer Trichy"
+      <h3 style="font-weight: 900; letter-spacing: 0.08em; margin: 0; font-size: 1.55rem;" class="brand-title">TRICHYFLOW</h3>
+      <div style="font-size: 0.72rem; letter-spacing: 0.09em; color: #9CA3AF; text-transform: uppercase; margin-top: 3px;">
+        Trichy City Traffic Control & Citizen Services Platform
       </div>
     </div>
 
-    <!-- Error message alert -->
-    <div id="loginError" class="alert alert-danger py-2 px-3 mb-3 text-center" style="display: none; font-size: 0.8rem; background: rgba(239, 68, 68, 0.18); border-color: #ef4444; color: #fca5a5;"></div>
-
-    <form id="loginForm">
-      <div class="form-group mb-3">
-        <label class="form-label"><i class="fa fa-user-shield text-warning me-1"></i> Username or Service ID</label>
-        <input type="text" id="username" class="form-control-trichy" placeholder="Enter username (e.g. admin)" required>
-      </div>
-
-      <div class="form-group mb-3">
-        <label class="form-label"><i class="fa fa-key text-info me-1"></i> Password</label>
-        <input type="password" id="password" class="form-control-trichy" placeholder="Enter password" required>
-      </div>
-
-      <div class="form-group mb-4">
-        <label class="form-label"><i class="fa fa-id-badge text-success me-1"></i> Authorized Role</label>
-        <select id="roleSelect" class="form-control-trichy" required>
-          <option value="ADMIN">System Administrator (Commissioner)</option>
-          <option value="TRAFFIC_POLICE">Traffic Police (Field Operations)</option>
-          <option value="CONTROL_ROOM" selected>Control Room Operator (Dispatch)</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn-primary-trichy w-100 justify-content-center py-2" style="font-size: 0.95rem;">
-        <i class="fa fa-sign-in-alt"></i> Access Command Console
+    <!-- Mode Switcher Tabs -->
+    <div class="d-flex gap-2 mb-3">
+      <button type="button" class="portal-tab-btn active" id="tabLoginBtn" onclick="switchTab('login')">
+        <i class="fa fa-user-shield me-1"></i> Officer Login
       </button>
-    </form>
+      <button type="button" class="portal-tab-btn" id="tabPublicBtn" onclick="switchTab('public')">
+        <i class="fa fa-users me-1"></i> Public Citizen
+      </button>
+      <button type="button" class="portal-tab-btn" id="tabRegisterBtn" onclick="switchTab('register')">
+        <i class="fa fa-user-plus me-1"></i> Register
+      </button>
+    </div>
 
-    <!-- Preset Demo Logins for Instant College Evaluation -->
-    <div class="mt-4 pt-3 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
-      <div class="text-center" style="font-size: 0.7rem; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.06em;">
-        Quick Evaluator Demo Logins (1-Click)
+    <!-- ============================================== -->
+    <!-- TAB 1: OFFICIAL & GENERAL LOGIN FORM -->
+    <!-- ============================================== -->
+    <div id="loginView">
+      <!-- Error message alert -->
+      <div id="loginError" class="alert alert-danger py-2 px-3 mb-3 text-center" style="display: none; font-size: 0.8rem; background: rgba(239, 68, 68, 0.18); border-color: #ef4444; color: #fca5a5;"></div>
+
+      <form id="loginForm">
+        <div class="form-group mb-3">
+          <label class="form-label"><i class="fa fa-user-shield text-warning me-1"></i> Username or Service ID</label>
+          <input type="text" id="username" class="form-control-trichy" placeholder="Enter username (e.g. admin / police / citizen)" required>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label"><i class="fa fa-key text-info me-1"></i> Password</label>
+          <input type="password" id="password" class="form-control-trichy" placeholder="Enter password" required>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label"><i class="fa fa-id-badge text-success me-1"></i> Authorized Role</label>
+          <select id="roleSelect" class="form-control-trichy" required>
+            <option value="PUBLIC">PUBLIC — Citizen / Motorist Portal</option>
+            <option value="CONTROL_ROOM" selected>CONTROL ROOM — Traffic Desk Operator</option>
+            <option value="TRAFFIC_POLICE">TRAFFIC POLICE — Field & Enforcement</option>
+            <option value="ADMIN">ADMIN — System Commissioner</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-primary-trichy w-100 justify-content-center py-2" style="font-size: 0.95rem;">
+          <i class="fa fa-sign-in-alt me-2"></i> Access Portal
+        </button>
+      </form>
+
+      <!-- Preset Demo Logins for Instant College Evaluation -->
+      <div class="mt-3 pt-3 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+        <div class="text-center" style="font-size: 0.68rem; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.06em;">
+          Quick Evaluator Demo Logins (1-Click)
+        </div>
+        <div class="demo-buttons-grid">
+          <button class="demo-credential-btn" data-user="citizen" data-pass="citizen123" data-role="PUBLIC">
+            <i class="fa fa-user text-info"></i><br><b>Citizen</b>
+          </button>
+          <button class="demo-credential-btn" data-user="admin" data-pass="admin123" data-role="ADMIN">
+            <i class="fa fa-shield-alt text-danger"></i><br><b>Admin</b>
+          </button>
+          <button class="demo-credential-btn" data-user="police" data-pass="police123" data-role="TRAFFIC_POLICE">
+            <i class="fa fa-user-ninja text-primary"></i><br><b>Police</b>
+          </button>
+          <button class="demo-credential-btn" data-user="control" data-pass="control123" data-role="CONTROL_ROOM">
+            <i class="fa fa-desktop text-success"></i><br><b>Control</b>
+          </button>
+        </div>
       </div>
-      <div class="demo-buttons-grid">
-        <button class="demo-credential-btn" data-user="admin" data-pass="admin123" data-role="ADMIN">
-          <i class="fa fa-shield-alt text-danger"></i><br><b>Admin</b>
-        </button>
-        <button class="demo-credential-btn" data-user="police" data-pass="police123" data-role="TRAFFIC_POLICE">
-          <i class="fa fa-user-ninja text-primary"></i><br><b>Traffic Police</b>
-        </button>
-        <button class="demo-credential-btn" data-user="control" data-pass="control123" data-role="CONTROL_ROOM">
-          <i class="fa fa-desktop text-success"></i><br><b>Control Room</b>
-        </button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: PUBLIC CITIZEN QUICK PORTAL -->
+    <!-- ============================================== -->
+    <div id="publicView" style="display: none;">
+      <div class="p-3 rounded mb-3" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(56, 189, 248, 0.3);">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="fa fa-users text-info fs-5"></i>
+          <b class="text-white">Public Citizen Services</b>
+        </div>
+        <div style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 12px;">
+          Search your vehicle violations, view live Trichy traffic flow, report road incidents, and check official police advisories.
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-outline-info w-100 py-2 fw-semibold" onclick="loginCitizenDemo()">
+            <i class="fa fa-sign-in-alt me-2"></i> Log in as Public Citizen (Demo: TN45AB1234)
+          </button>
+          <a href="public-portal.html" class="btn btn-warning w-100 py-2 fw-semibold text-dark">
+            <i class="fa fa-external-link-alt me-2"></i> Open Public Citizen Portal as Guest
+          </a>
+        </div>
       </div>
 
-      <!-- Java Spring Boot Portal Switch & Officer Registration -->
-      <div class="mt-3 text-center d-flex justify-content-center gap-2">
-        <a href="/login" class="badge text-decoration-none px-3 py-2" style="background: rgba(234, 88, 12, 0.25); border: 1px solid rgba(234, 88, 12, 0.5); color: #fb923c; font-size: 0.75rem;">
-          <i class="fab fa-java me-1"></i> Java Server Login (Spring MVC)
-        </a>
-        <a href="/register" class="badge text-decoration-none px-3 py-2" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; font-size: 0.75rem;">
-          <i class="fa fa-user-plus me-1"></i> Register Officer
-        </a>
+      <div class="row g-2 text-center" style="font-size: 0.74rem;">
+        <div class="col-4 p-2 rounded" style="background: rgba(255,255,255,0.04);">
+          <i class="fa fa-receipt text-warning fs-6 mb-1"></i><br>Check E-Challans
+        </div>
+        <div class="col-4 p-2 rounded" style="background: rgba(255,255,255,0.04);">
+          <i class="fa fa-map-marked-alt text-success fs-6 mb-1"></i><br>Live GIS Traffic
+        </div>
+        <div class="col-4 p-2 rounded" style="background: rgba(255,255,255,0.04);">
+          <i class="fa fa-ambulance text-danger fs-6 mb-1"></i><br>Dial 108 Helplines
+        </div>
       </div>
-      <div class="text-center mt-2" style="font-size: 0.68rem; color: #6B7280;">
-        Trichy Traffic Simulation & Decision Support • Major Project
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 3: NEW USER REGISTRATION FORM -->
+    <!-- ============================================== -->
+    <div id="registerView" style="display: none;">
+      <div id="regFeedbackMsg" class="alert py-2 px-3 mb-3 text-center" style="display: none; font-size: 0.8rem;"></div>
+
+      <form id="registerForm">
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-user text-warning me-1"></i> Full Name</label>
+            <input type="text" id="regFullName" class="form-control-trichy" placeholder="e.g. R. Karthik" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-at text-info me-1"></i> Username</label>
+            <input type="text" id="regUsername" class="form-control-trichy" placeholder="e.g. karthik_tn" required>
+          </div>
+
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-id-badge text-success me-1"></i> Account Role</label>
+            <select id="regRole" class="form-control-trichy" required>
+              <option value="PUBLIC" selected>Public Citizen / Motorist</option>
+              <option value="TRAFFIC_POLICE">Traffic Police Officer</option>
+              <option value="CONTROL_ROOM">Control Room Operator</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-car text-warning me-1"></i> Vehicle / Service No.</label>
+            <input type="text" id="regVehicleNo" class="form-control-trichy" placeholder="e.g. TN45AB1234">
+          </div>
+
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-envelope text-primary me-1"></i> Email</label>
+            <input type="email" id="regEmail" class="form-control-trichy" placeholder="name@email.com">
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-phone text-success me-1"></i> Mobile</label>
+            <input type="tel" id="regPhone" class="form-control-trichy" placeholder="+91 94431 XXXXX">
+          </div>
+
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-key text-warning me-1"></i> Password</label>
+            <input type="password" id="regPassword" class="form-control-trichy" placeholder="Min 4 characters" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size: 0.76rem;"><i class="fa fa-lock text-warning me-1"></i> Confirm</label>
+            <input type="password" id="regConfirmPassword" class="form-control-trichy" placeholder="Re-enter password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-trichy w-100 justify-content-center py-2 mt-3" style="background: linear-gradient(135deg, #138808 0%, #15803d 100%); border: none;">
+          <i class="fa fa-user-check me-2"></i> Create & Register Account
+        </button>
+      </form>
+
+      <div class="text-center mt-2" style="font-size: 0.72rem; color: #64748B;">
+        Accounts are stored in both client storage and server database.
       </div>
+    </div>
+
+    <!-- Bottom Links -->
+    <div class="mt-3 pt-2 text-center d-flex justify-content-center gap-2 border-top border-secondary border-opacity-25">
+      <a href="public-portal.html" class="badge text-decoration-none px-3 py-2" style="background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; font-size: 0.72rem;">
+        <i class="fa fa-users me-1"></i> Public Citizen Portal
+      </a>
+      <a href="register.html" class="badge text-decoration-none px-3 py-2" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.72rem;">
+        <i class="fa fa-id-card me-1"></i> Full Registration Page
+      </a>
     </div>
   </div>
 
@@ -212,8 +342,37 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    function switchTab(tab) {
+      document.getElementById('tabLoginBtn').classList.remove('active');
+      document.getElementById('tabPublicBtn').classList.remove('active');
+      document.getElementById('tabRegisterBtn').classList.remove('active');
+
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('publicView').style.display = 'none';
+      document.getElementById('registerView').style.display = 'none';
+
+      if (tab === 'login') {
+        document.getElementById('tabLoginBtn').classList.add('active');
+        document.getElementById('loginView').style.display = 'block';
+      } else if (tab === 'public') {
+        document.getElementById('tabPublicBtn').classList.add('active');
+        document.getElementById('publicView').style.display = 'block';
+      } else if (tab === 'register') {
+        document.getElementById('tabRegisterBtn').classList.add('active');
+        document.getElementById('registerView').style.display = 'block';
+      }
+    }
+
+    async function loginCitizenDemo() {
+      const res = await TrichyAPI.login('citizen', 'citizen123', 'PUBLIC');
+      if (res.success) {
+        window.location.href = 'public-portal.html';
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       AuthManager.initLogin();
+      AuthManager.initRegister();
     });
   </script>
 </body>

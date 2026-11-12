@@ -82,6 +82,8 @@ trichyflow/
 │       └── static/                                  # Packaged frontend web assets
 ├── frontend/
 │   ├── index.html                                   # Indian Tricolour login with rotating Ashoka Chakra
+│   ├── public-portal.html                           # Public Citizen Traffic & E-Challan Portal
+│   ├── register.html                                # Standalone User & Officer Registration Page
 │   ├── dashboard.html                               # Central Control Room Command Center
 │   ├── police-dashboard.html                        # Dedicated Traffic Police Field Portal
 │   ├── css/
@@ -139,6 +141,7 @@ Located in [`PredictionService.java`](file:///C:/Users/V%20CHETAN/.gemini/antigr
 
 | Role | Username | Password | Access Scope |
 | :--- | :--- | :--- | :--- |
+| **Public Citizen / Motorist**| `citizen` | `citizen123` | Public portal, vehicle e-challans search & payment, incident reporting, live map |
 | **Admin (Commissioner)** | `admin` | `admin123` | Full administrative control, all junctions, incidents, analytics, settings |
 | **Traffic Police** | `police` | `police123` | Field view, report accidents/roadblocks, issue challans, nearby patrols |
 | **Control Room Operator**| `control` | `control123`| Central GIS map, activate green corridors, optimize signals, disaster mode |

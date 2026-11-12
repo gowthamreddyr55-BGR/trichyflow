@@ -51,13 +51,14 @@ public class AuthController {
         // Default demo fallback verification
         if (("admin".equals(username) && "admin123".equals(password)) ||
             ("police".equals(username) && "police123".equals(password)) ||
-            ("control".equals(username) && "control123".equals(password))) {
+            ("control".equals(username) && "control123".equals(password)) ||
+            ("citizen".equals(username) && "citizen123".equals(password))) {
             
             Map<String, Object> resp = new HashMap<>();
             resp.put("username", username);
-            resp.put("fullName", "admin".equals(username) ? "Commissioner S. Ramanathan" : ("police".equals(username) ? "Inspector M. Anbarasan" : "Operator K. Selvam"));
-            resp.put("role", role != null ? role : "CONTROL_ROOM");
-            resp.put("badgeNumber", "admin".equals(username) ? "IPS-TR-01" : ("police".equals(username) ? "TP-CHATH-42" : "CR-SYS-108"));
+            resp.put("fullName", "admin".equals(username) ? "Commissioner S. Ramanathan" : ("police".equals(username) ? "Inspector M. Anbarasan" : ("citizen".equals(username) ? "Trichy Resident (Public User)" : "Operator K. Selvam")));
+            resp.put("role", "citizen".equals(username) ? "PUBLIC" : (role != null ? role : "CONTROL_ROOM"));
+            resp.put("badgeNumber", "admin".equals(username) ? "IPS-TR-01" : ("police".equals(username) ? "TP-CHATH-42" : ("citizen".equals(username) ? "CITIZEN-TN45" : "CR-SYS-108")));
             resp.put("token", "jwt-trichyflow-demo-" + System.currentTimeMillis());
             return ResponseEntity.ok(resp);
         }

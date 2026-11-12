@@ -113,8 +113,59 @@ const TrichyMockDB = {
 };
 
 const TrichyAPI = {
-  // Authentication
+  // Authentication & Registration
+  async register(payload) {
+    const { username, password, fullName, role, email, phone, vehicleNo, badgeNumber } = payload;
+    if (!username || !password) {
+      return { success: false, message: "Username and password are required." };
+    }
+
+    const assignedRole = (role || 'PUBLIC').toUpperCase();
+    const newUser = {
+      username: username.trim(),
+      password: password.trim(),
+      fullName: fullName && fullName.trim().length > 0 ? fullName.trim() : (assignedRole === 'PUBLIC' ? 'Trichy Citizen' : 'Traffic Official'),
+      role: assignedRole,
+      email: email ? email.trim() : `${username.trim()}@trichyflow.local`,
+      phone: phone ? phone.trim() : '',
+      vehicleNo: vehicleNo ? vehicleNo.trim().toUpperCase() : '',
+      badgeNumber: badgeNumber ? badgeNumber.trim() : (assignedRole === 'PUBLIC' ? `CITIZEN-${(vehicleNo || 'TN45').toUpperCase()}` : `OFFICER-${username.trim().toUpperCase()}`),
+      registeredAt: new Date().toISOString()
+    };
+
+    // Store in localStorage for instant offline & GitHub Pages evaluation
+    let registeredUsers = [];
+    try {
+      const stored = localStorage.getItem('trichy_registered_users');
+      if (stored) registeredUsers = JSON.parse(stored);
+    } catch (e) { registeredUsers = []; }
+
+    const existingIdx = registeredUsers.findIndex(u => u.username.toLowerCase() === newUser.username.toLowerCase());
+    if (existingIdx >= 0) {
+      return { success: false, message: `Username "${username}" is already registered. Please log in or choose a different username.` };
+    }
+
+    registeredUsers.push(newUser);
+    localStorage.setItem('trichy_registered_users', JSON.stringify(registeredUsers));
+
+    // Also attempt backend synchronization
+    try {
+      await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+    } catch (e) {}
+
+    return {
+      success: true,
+      message: `Account for ${newUser.fullName} successfully registered! You can now log in.`,
+      user: newUser
+    };
+  },
+
   async login(username, password, role) {
+    // 1. Attempt Spring Boot Backend API
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
@@ -132,21 +183,67 @@ const TrichyAPI = {
       console.warn("Backend API unavailable, using resilient client simulation authentication.");
     }
 
-    // Client-side fallback authentication
-    const validRoles = ['ADMIN', 'TRAFFIC_POLICE', 'CONTROL_ROOM'];
-    if (!validRoles.includes(role)) {
-      return { success: false, message: "Invalid role selected." };
-    }
-    const user = {
-      username: username || "operator",
-      fullName: username === 'admin' ? 'Commissioner S. Ramanathan' : (username === 'police' ? 'Inspector M. Anbarasan' : 'Operator K. Selvam'),
-      role: role,
-      token: "demo-jwt-token-trichyflow-" + Date.now(),
-      badgeNumber: role === 'ADMIN' ? 'IPS-TR-01' : (role === 'TRAFFIC_POLICE' ? 'TP-CHATH-42' : 'CR-SYS-108')
+    const trimmedUser = (username || '').trim().toLowerCase();
+    const assignedRole = (role || 'PUBLIC').toUpperCase();
+
+    // 2. Check localStorage registered users (Client & GitHub Pages persistence)
+    try {
+      const stored = localStorage.getItem('trichy_registered_users');
+      if (stored) {
+        const users = JSON.parse(stored);
+        const match = users.find(u => u.username.toLowerCase() === trimmedUser);
+        if (match) {
+          if (match.password !== password) {
+            return { success: false, message: "Incorrect password. Please verify credentials." };
+          }
+          const userObj = {
+            id: match.id || Date.now(),
+            username: match.username,
+            fullName: match.fullName,
+            role: match.role,
+            badgeNumber: match.badgeNumber,
+            vehicleNo: match.vehicleNo || '',
+            email: match.email || '',
+            phone: match.phone || '',
+            token: "jwt-trichyflow-reg-" + Date.now()
+          };
+          TrichyMockDB.currentUser = userObj;
+          localStorage.setItem('trichy_user', JSON.stringify(userObj));
+          return { success: true, user: userObj };
+        }
+      }
+    } catch (e) {}
+
+    // 3. Built-in demo accounts (instant 1-click evaluation)
+    const demoAccounts = {
+      'admin': { pass: 'admin123', name: 'Commissioner S. Ramanathan', role: 'ADMIN', badge: 'IPS-TR-01' },
+      'police': { pass: 'police123', name: 'Inspector M. Anbarasan', role: 'TRAFFIC_POLICE', badge: 'TP-CHATH-42' },
+      'control': { pass: 'control123', name: 'Operator K. Selvam', role: 'CONTROL_ROOM', badge: 'CR-SYS-108' },
+      'citizen': { pass: 'citizen123', name: 'Trichy Resident (Public User)', role: 'PUBLIC', badge: 'CITIZEN-TN45', vehicleNo: 'TN45AB1234' }
     };
-    TrichyMockDB.currentUser = user;
-    localStorage.setItem('trichy_user', JSON.stringify(user));
-    return { success: true, user: user };
+
+    if (demoAccounts[trimmedUser]) {
+      const demo = demoAccounts[trimmedUser];
+      if (password !== demo.pass) {
+        return { success: false, message: "Invalid demo password. Please check credentials." };
+      }
+      const user = {
+        username: trimmedUser,
+        fullName: demo.name,
+        role: demo.role,
+        badgeNumber: demo.badge,
+        vehicleNo: demo.vehicleNo || '',
+        token: "demo-jwt-token-trichyflow-" + Date.now()
+      };
+      TrichyMockDB.currentUser = user;
+      localStorage.setItem('trichy_user', JSON.stringify(user));
+      return { success: true, user };
+    }
+
+    return {
+      success: false,
+      message: `User "${username}" not found. Please click "Register New Account" to sign up first.`
+    };
   },
 
   getCurrentUser() {
